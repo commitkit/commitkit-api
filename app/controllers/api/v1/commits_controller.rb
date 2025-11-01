@@ -1,8 +1,4 @@
-class Api::V1::CommitsController < ApplicationController
-  include ApiAuthentication
-
-  skip_before_action :verify_authenticity_token
-
+class Api::V1::CommitsController < Api::V1::BaseController
   def index
     commits = current_user.commits.order(created_at: :desc)
     render json: commits
