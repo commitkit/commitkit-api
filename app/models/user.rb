@@ -5,6 +5,8 @@ class User < ApplicationRecord
 
   normalizes :email_address, with: ->(e) { e.strip.downcase }
 
+  validates :email_address, presence: true, uniqueness: true
+
   # Generate API token before creating user
   before_create :generate_api_token
 
