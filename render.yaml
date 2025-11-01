@@ -1,0 +1,29 @@
+services:
+  - type: web
+    name: commitkit-api
+    runtime: docker
+    repo: https://github.com/commitkit/commitkit-api
+    region: oregon
+    plan: free
+    branch: main
+    dockerfilePath: ./Dockerfile
+    envVars:
+      - key: RAILS_ENV
+        value: production
+      - key: RAILS_MASTER_KEY
+        sync: false
+      - key: DATABASE_URL
+        fromDatabase:
+          name: commitkit-db
+          property: connectionString
+      - key: RAILS_SERVE_STATIC_FILES
+        value: true
+      - key: RAILS_LOG_TO_STDOUT
+        value: true
+    healthCheckPath: /up
+
+databases:
+  - name: commitkit-db
+    databaseName: commitkit_production
+    plan: free
+    region: oregon
