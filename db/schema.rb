@@ -10,9 +10,21 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2025_11_01_133507) do
+ActiveRecord::Schema[8.1].define(version: 2025_11_01_134705) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
+
+  create_table "commits", force: :cascade do |t|
+    t.string "commit_hash", null: false
+    t.datetime "created_at", null: false
+    t.text "message"
+    t.text "summary"
+    t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.index ["commit_hash"], name: "index_commits_on_commit_hash", unique: true
+    t.index ["user_id", "commit_hash"], name: "index_commits_on_user_id_and_commit_hash", unique: true
+    t.index ["user_id"], name: "index_commits_on_user_id"
+  end
 
   create_table "sessions", force: :cascade do |t|
     t.datetime "created_at", null: false
@@ -24,12 +36,15 @@ ActiveRecord::Schema[8.1].define(version: 2025_11_01_133507) do
   end
 
   create_table "users", force: :cascade do |t|
+    t.string "api_token"
     t.datetime "created_at", null: false
     t.string "email_address", null: false
     t.string "password_digest", null: false
     t.datetime "updated_at", null: false
+    t.index ["api_token"], name: "index_users_on_api_token", unique: true
     t.index ["email_address"], name: "index_users_on_email_address", unique: true
   end
 
+  add_foreign_key "commits", "users"
   add_foreign_key "sessions", "users"
 end
