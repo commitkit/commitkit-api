@@ -24,6 +24,21 @@
   </head>
 
   <body>
+    <% if authenticated? %>
+      <nav class="bg-white shadow-sm border-b border-gray-200">
+        <div class="container mx-auto px-4">
+          <div class="flex justify-between items-center h-16">
+            <div class="flex items-center">
+              <h1 class="text-xl font-bold text-gray-900">CommitKit</h1>
+            </div>
+            <div class="flex items-center gap-4">
+              <span class="text-sm text-gray-600"><%= Current.user.email_address %></span>
+              <%= button_to "Log out", session_path, method: :delete, class: "text-sm text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md hover:bg-gray-100" %>
+            </div>
+          </div>
+        </div>
+      </nav>
+    <% end %>
     <main class="container mx-auto mt-28 px-5 flex">
       <%= yield %>
     </main>
