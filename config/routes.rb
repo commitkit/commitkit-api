@@ -7,8 +7,9 @@ Rails.application.routes.draw do
   get "/login", to: "sessions#new", as: :login
   get "/signup", to: "registrations#new", as: :signup
 
-  # Dashboard
-  root "dashboard#index"
+  # Landing page and dashboard
+  root "home#index"
+  get "/dashboard", to: "dashboard#index", as: :dashboard
 
   # API routes
   namespace :api do
