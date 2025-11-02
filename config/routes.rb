@@ -3,6 +3,10 @@ Rails.application.routes.draw do
   resources :passwords, param: :token
   resource :registration, only: [ :new, :create ]
 
+  # Friendly URL aliases
+  get "/login", to: "sessions#new", as: :login
+  get "/signup", to: "registrations#new", as: :signup
+
   # Dashboard
   root "dashboard#index"
 

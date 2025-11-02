@@ -1,3 +1,12 @@
 <svg width="512" height="512" xmlns="http://www.w3.org/2000/svg">
-  <circle cx="256" cy="256" r="256" fill="red"/>
+  <defs>
+    <linearGradient id="gradient3" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#6366F1;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#A855F7;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  <!-- Background -->
+  <rect width="512" height="512" rx="100" fill="url(#gradient3)"/>
+  <!-- CK text -->
+  <text x="256" y="350" font-family="Arial, sans-serif" font-size="280" font-weight="bold" fill="white" text-anchor="middle">CK</text>
 </svg>
