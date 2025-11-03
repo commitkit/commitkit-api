@@ -11,6 +11,7 @@ class Api::V1::CommitsController < Api::V1::BaseController
       commit_hash: params[:commit][:commit_hash],
       message: params[:commit][:message],
       summary: params[:commit][:summary],
+      committed_at: params[:commit][:committed_at],
       repository: repository
     )
 
@@ -64,6 +65,6 @@ class Api::V1::CommitsController < Api::V1::BaseController
   private
 
   def commit_params
-    params.require(:commit).permit(:commit_hash, :message, :summary)
+    params.require(:commit).permit(:commit_hash, :message, :summary, :committed_at)
   end
 end
