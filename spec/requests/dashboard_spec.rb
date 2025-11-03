@@ -77,6 +77,23 @@ RSpec.describe "Dashboard", type: :request do
         expect(response.body).to include("repo1")
         expect(response.body).to include("repo2")
       end
+
+      it "paginates commits" do
+        repo = create(:repository, user: user)
+        25.times do |i|
+          user.commits.create!(repository: repo, commit_hash: "hash#{i}", message: "Commit #{i}", summary: "Summary #{i}")
+        end
+
+        get dashboard_path
+
+        # Should show first 20 commits (default page size)
+        expect(response.body).to include("Commit 24") # Most recent
+        expect(response.body).not_to include("Commit 4") # Older, on page 2
+
+        # Check pagination controls exist
+        expect(response.body).to include('pagy nav') # Pagination nav exists
+        expect(response.body).to include('page=2') # Link to page 2
+      end
     end
 
     context "when user is not authenticated" do

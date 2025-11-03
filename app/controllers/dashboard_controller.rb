@@ -5,7 +5,7 @@ class DashboardController < ApplicationController
     commits_scope = Current.user.commits
     commits_scope = commits_scope.where(repository_id: params[:repository_id]) if params[:repository_id].present?
 
-    @commits = commits_scope.order(created_at: :desc).limit(50)
+    @pagy, @commits = pagy(commits_scope.order(created_at: :desc))
     @total_commits = Current.user.commits.count
   end
 end
