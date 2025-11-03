@@ -48,7 +48,7 @@ RSpec.describe "Registrations", type: :request do
 
       it "redirects to dashboard" do
         post registration_path, params: valid_params
-        expect(response).to redirect_to(root_path)
+        expect(response).to redirect_to(dashboard_path)
       end
     end
 
