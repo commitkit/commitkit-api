@@ -1,0 +1,11 @@
+/* Dashboard commit list styles */
+
+.commit-details-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+}
+
+.commit-message-content {
+  white-space: pre-line;
+}

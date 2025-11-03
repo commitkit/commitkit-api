@@ -39,21 +39,38 @@
 
     <%= turbo_frame_tag "commits-list" do %>
       <% if @commits.any? %>
-        <div class="divide-y divide-gray-200">
+        <div class="space-y-6">
           <% @commits.each do |commit| %>
-            <div class="px-6 py-4 hover:bg-gray-50" data-controller="expandable">
-              <div class="flex justify-between items-start mb-2">
-                <div class="flex-1">
-                  <p class="font-medium text-gray-900" style="white-space: pre-line;" data-expandable-target="content"><%= commit.message %></p>
-                  <button type="button" class="text-sm text-blue-600 hover:text-blue-700 mt-1 hidden" data-expandable-target="toggle" data-action="click->expandable#toggle">More...</button>
+            <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow" data-controller="expandable">
+              <!-- Header with title and metadata -->
+              <div class="flex items-start justify-between gap-6 mb-4">
+                <h3 class="text-lg font-semibold text-gray-900 flex-1"><%= commit.message.lines.first&.strip %></h3>
+                <div class="text-right flex-shrink-0">
+                  <div class="text-xs text-gray-500"><%= time_ago_in_words(commit.created_at) %> ago</div>
+                  <div class="text-xs text-gray-400 mt-1">
+                    <code class="bg-gray-100 px-2 py-1 rounded text-gray-700"><%= commit.commit_hash.truncate(12) %></code>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Two-column layout for summary and details -->
+              <div class="commit-details-grid">
+                <!-- Left column: Summary -->
+                <div>
                   <% if commit.summary.present? %>
-                    <p class="text-sm text-gray-600 mt-1"><%= commit.summary %></p>
+                    <div class="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">Summary</div>
+                    <p class="text-sm text-gray-700"><%= commit.summary %></p>
                   <% end %>
                 </div>
-                <span class="text-xs text-gray-500 flex-shrink-0 ml-4"><%= time_ago_in_words(commit.created_at) %> ago</span>
-              </div>
-              <div class="flex gap-4 text-xs text-gray-500">
-                <span>Hash: <code class="bg-gray-100 px-1 rounded"><%= commit.commit_hash.truncate(12) %></code></span>
+
+                <!-- Right column: Details -->
+                <div>
+                  <% if commit.message.lines.count > 1 %>
+                    <div class="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">Details</div>
+                    <div class="text-sm text-gray-700 leading-relaxed commit-message-content" data-expandable-target="content"><%= commit.message.lines[1..-1].join.strip %></div>
+                    <button type="button" class="text-sm text-blue-600 hover:text-blue-700 mt-2 hidden" data-expandable-target="toggle" data-action="click->expandable#toggle">More...</button>
+                  <% end %>
+                </div>
               </div>
             </div>
           <% end %>
