@@ -49,7 +49,7 @@ class Api::V1::CommitsController < Api::V1::BaseController
         failed += 1
         errors << {
           commit_hash: commit_data[:commit_hash],
-          errors: [e.message]
+          errors: [ e.message ]
         }
       end
     end
