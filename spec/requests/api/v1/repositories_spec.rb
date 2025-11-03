@@ -98,6 +98,52 @@ RSpec.describe "Api::V1::Repositories", type: :request do
     end
   end
 
+  describe "GET /api/v1/repositories" do
+    context "with valid authentication" do
+      it "returns all repositories for the authenticated user" do
+        repo1 = create(:repository, user: user, url: "https://github.com/user/repo1")
+        repo2 = create(:repository, user: user, url: "https://github.com/user/repo2")
+
+        get "/api/v1/repositories", headers: headers
+
+        expect(response).to have_http_status(:success)
+        expect(json_response.length).to eq(2)
+      end
+
+      it "does not return other users' repositories" do
+        create(:repository, user: user, url: "https://github.com/user/repo1")
+        other_user = create(:user, email_address: "other@example.com")
+        create(:repository, user: other_user, url: "https://github.com/other/repo2")
+
+        get "/api/v1/repositories", headers: headers
+
+        expect(response).to have_http_status(:success)
+        expect(json_response.length).to eq(1)
+        expect(json_response.first['url']).to eq("https://github.com/user/repo1")
+      end
+
+      it "filters repositories by URL when url parameter is provided" do
+        repo1 = create(:repository, user: user, url: "https://github.com/user/repo1")
+        create(:repository, user: user, url: "https://github.com/user/repo2")
+
+        get "/api/v1/repositories", params: { url: "https://github.com/user/repo1" }, headers: headers
+
+        expect(response).to have_http_status(:success)
+        expect(json_response.length).to eq(1)
+        expect(json_response.first['id']).to eq(repo1.id)
+        expect(json_response.first['url']).to eq("https://github.com/user/repo1")
+      end
+    end
+
+    context "with invalid authentication" do
+      it "returns unauthorized" do
+        get "/api/v1/repositories"
+
+        expect(response).to have_http_status(:unauthorized)
+      end
+    end
+  end
+
   describe "DELETE /api/v1/repositories/:id" do
     let!(:repo_a) { create(:repository, user: user, url: "https://github.com/user/repo-a") }
     let!(:repo_b) { create(:repository, user: user, url: "https://github.com/user/repo-b") }
