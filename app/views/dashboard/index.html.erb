@@ -20,33 +20,49 @@
   <!-- Commits List -->
   <div class="bg-white rounded-lg shadow">
     <div class="px-6 py-4 border-b border-gray-200">
-      <h2 class="text-xl font-semibold text-gray-900">Recent Commits</h2>
-    </div>
-
-    <% if @commits.any? %>
-      <div class="divide-y divide-gray-200">
-        <% @commits.each do |commit| %>
-          <div class="px-6 py-4 hover:bg-gray-50">
-            <div class="flex justify-between items-start mb-2">
-              <div class="flex-1">
-                <p class="font-medium text-gray-900"><%= commit.message %></p>
-                <% if commit.summary.present? %>
-                  <p class="text-sm text-gray-600 mt-1"><%= commit.summary %></p>
-                <% end %>
-              </div>
-              <span class="text-xs text-gray-500"><%= time_ago_in_words(commit.created_at) %> ago</span>
-            </div>
-            <div class="flex gap-4 text-xs text-gray-500">
-              <span>Hash: <code class="bg-gray-100 px-1 rounded"><%= commit.commit_hash.truncate(12) %></code></span>
-            </div>
-          </div>
+      <div class="flex justify-between items-center">
+        <h2 class="text-xl font-semibold text-gray-900">Recent Commits</h2>
+        <% if @repositories.any? %>
+          <form method="get" action="<%= dashboard_path %>" data-turbo-frame="commits-list">
+            <select name="repository_id" class="border border-gray-300 rounded px-3 py-1 text-sm" data-turbo-action="advance" onchange="this.form.requestSubmit()">
+              <option value="">All Repositories</option>
+              <% @repositories.each do |repo| %>
+                <option value="<%= repo.id %>" <%= 'selected' if params[:repository_id] == repo.id.to_s %>>
+                  <%= repo.name || repo.url %>
+                </option>
+              <% end %>
+            </select>
+          </form>
         <% end %>
       </div>
-    <% else %>
-      <div class="px-6 py-12 text-center">
-        <p class="text-gray-500 mb-4">No commits yet</p>
-        <p class="text-sm text-gray-400">Commits will appear here when you start using the CLI</p>
-      </div>
+    </div>
+
+    <%= turbo_frame_tag "commits-list" do %>
+      <% if @commits.any? %>
+        <div class="divide-y divide-gray-200">
+          <% @commits.each do |commit| %>
+            <div class="px-6 py-4 hover:bg-gray-50">
+              <div class="flex justify-between items-start mb-2">
+                <div class="flex-1">
+                  <p class="font-medium text-gray-900"><%= commit.message %></p>
+                  <% if commit.summary.present? %>
+                    <p class="text-sm text-gray-600 mt-1"><%= commit.summary %></p>
+                  <% end %>
+                </div>
+                <span class="text-xs text-gray-500"><%= time_ago_in_words(commit.created_at) %> ago</span>
+              </div>
+              <div class="flex gap-4 text-xs text-gray-500">
+                <span>Hash: <code class="bg-gray-100 px-1 rounded"><%= commit.commit_hash.truncate(12) %></code></span>
+              </div>
+            </div>
+          <% end %>
+        </div>
+      <% else %>
+        <div class="px-6 py-12 text-center">
+          <p class="text-gray-500 mb-4">No commits yet</p>
+          <p class="text-sm text-gray-400">Commits will appear here when you start using the CLI</p>
+        </div>
+      <% end %>
     <% end %>
   </div>
 </div>
