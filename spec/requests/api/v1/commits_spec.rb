@@ -109,6 +109,119 @@ RSpec.describe "Api::V1::Commits", type: :request do
     end
   end
 
+  describe "DELETE /api/v1/commits/:id" do
+    let!(:commit) { create(:commit, user: user, commit_hash: "abc123", message: "Test commit", summary: "Summary") }
+
+    context "with valid authentication" do
+      it "deletes the specified commit" do
+        expect {
+          delete "/api/v1/commits/#{commit.id}", headers: headers
+        }.to change { user.commits.count }.by(-1)
+
+        expect(response).to have_http_status(:ok)
+        expect(json_response['message']).to eq('Commit deleted successfully')
+      end
+
+      it "returns not found for non-existent commit" do
+        delete "/api/v1/commits/99999", headers: headers
+
+        expect(response).to have_http_status(:not_found)
+      end
+
+      it "does not allow deleting other users' commits" do
+        other_user = User.create!(email_address: "other@example.com", password: "password123", password_confirmation: "password123")
+        other_commit = other_user.commits.create!(commit_hash: "xyz789", message: "Other commit", summary: "Other summary")
+
+        delete "/api/v1/commits/#{other_commit.id}", headers: headers
+
+        expect(response).to have_http_status(:not_found)
+        expect(other_commit.reload).to be_present
+      end
+    end
+
+    context "with invalid authentication" do
+      it "returns unauthorized" do
+        delete "/api/v1/commits/#{commit.id}"
+
+        expect(response).to have_http_status(:unauthorized)
+      end
+    end
+  end
+
+  describe "DELETE /api/v1/commits/destroy_by_repository" do
+    context "with valid authentication" do
+      before do
+        # Commits for repo A
+        user.commits.create!(commit_hash: "abc123", message: "First commit", summary: "Summary 1", repository_url: "https://github.com/user/repo-a")
+        user.commits.create!(commit_hash: "def456", message: "Second commit", summary: "Summary 2", repository_url: "https://github.com/user/repo-a")
+        user.commits.create!(commit_hash: "ghi789", message: "Third commit", summary: "Summary 3", repository_url: "https://github.com/user/repo-a")
+
+        # Commits for repo B (should not be deleted)
+        user.commits.create!(commit_hash: "jkl012", message: "Fourth commit", summary: "Summary 4", repository_url: "https://github.com/user/repo-b")
+      end
+
+      it "deletes all commits for the specified repository" do
+        expect {
+          delete "/api/v1/commits",
+            params: { repository_url: "https://github.com/user/repo-a" },
+            headers: headers
+        }.to change { user.commits.count }.from(4).to(1)
+
+        expect(response).to have_http_status(:ok)
+        expect(json_response['deleted']).to eq(3)
+        expect(json_response['message']).to eq('All commits for repository deleted successfully')
+      end
+
+      it "does not delete commits from other repositories" do
+        delete "/api/v1/commits",
+          params: { repository_url: "https://github.com/user/repo-a" },
+          headers: headers
+
+        remaining_commit = user.commits.find_by(commit_hash: "jkl012")
+        expect(remaining_commit).to be_present
+        expect(remaining_commit.repository_url).to eq("https://github.com/user/repo-b")
+      end
+
+      it "does not delete other users' commits from the same repository" do
+        other_user = User.create!(email_address: "other@example.com", password: "password123", password_confirmation: "password123")
+        other_user.commits.create!(commit_hash: "xyz789", message: "Other commit", summary: "Other summary", repository_url: "https://github.com/user/repo-a")
+
+        expect {
+          delete "/api/v1/commits",
+            params: { repository_url: "https://github.com/user/repo-a" },
+            headers: headers
+        }.not_to change { other_user.commits.count }
+
+        expect(other_user.commits.count).to eq(1)
+      end
+
+      it "returns zero deleted when user has no commits for that repository" do
+        delete "/api/v1/commits",
+          params: { repository_url: "https://github.com/user/nonexistent" },
+          headers: headers
+
+        expect(response).to have_http_status(:ok)
+        expect(json_response['deleted']).to eq(0)
+      end
+
+      it "requires repository_url parameter" do
+        delete "/api/v1/commits", headers: headers
+
+        expect(response).to have_http_status(:bad_request)
+        expect(json_response['error']).to eq('repository_url parameter is required')
+      end
+    end
+
+    context "with invalid authentication" do
+      it "returns unauthorized" do
+        delete "/api/v1/commits",
+          params: { repository_url: "https://github.com/user/repo-a" }
+
+        expect(response).to have_http_status(:unauthorized)
+      end
+    end
+  end
+
   private
 
   def json_response

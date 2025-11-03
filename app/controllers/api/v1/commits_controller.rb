@@ -60,6 +60,17 @@ class Api::V1::CommitsController < Api::V1::BaseController
     render json: result, status: :created
   end
 
+  def destroy
+    commit = current_user.commits.find_by(id: params[:id])
+
+    if commit
+      commit.destroy
+      render json: { message: 'Commit deleted successfully' }, status: :ok
+    else
+      render json: { error: 'Commit not found' }, status: :not_found
+    end
+  end
+
   private
 
   def commit_params
