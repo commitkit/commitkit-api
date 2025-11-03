@@ -91,7 +91,7 @@ RSpec.describe "Dashboard", type: :request do
         expect(response.body).not_to include("Commit 4") # Older, on page 2
 
         # Check pagination controls exist
-        expect(response.body).to include('pagy nav') # Pagination nav exists
+        expect(response.body).to include('aria-label="Pagination"') # Pagination nav exists
         expect(response.body).to include('page=2') # Link to page 2
       end
     end
