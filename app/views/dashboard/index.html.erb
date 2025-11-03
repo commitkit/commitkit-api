@@ -41,10 +41,11 @@
       <% if @commits.any? %>
         <div class="divide-y divide-gray-200">
           <% @commits.each do |commit| %>
-            <div class="px-6 py-4 hover:bg-gray-50">
+            <div class="px-6 py-4 hover:bg-gray-50" data-controller="expandable">
               <div class="flex justify-between items-start mb-2">
                 <div class="flex-1">
-                  <p class="font-medium text-gray-900" style="white-space: pre-line;"><%= commit.message %></p>
+                  <p class="font-medium text-gray-900" style="white-space: pre-line;" data-expandable-target="content"><%= commit.message %></p>
+                  <button type="button" class="text-sm text-blue-600 hover:text-blue-700 mt-1 hidden" data-expandable-target="toggle" data-action="click->expandable#toggle">More...</button>
                   <% if commit.summary.present? %>
                     <p class="text-sm text-gray-600 mt-1"><%= commit.summary %></p>
                   <% end %>
