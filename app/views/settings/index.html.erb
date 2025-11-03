@@ -1,0 +1,70 @@
+<div class="max-w-4xl mx-auto px-4 py-8">
+  <div class="mb-8">
+    <h1 class="text-3xl font-bold text-gray-900 mb-2">Settings</h1>
+    <p class="text-gray-600">Manage your CommitKit configuration</p>
+  </div>
+
+  <!-- API Token Section -->
+  <div class="bg-white rounded-lg shadow mb-6">
+    <div class="px-6 py-4 border-b border-gray-200">
+      <h2 class="text-xl font-semibold text-gray-900">API Token</h2>
+    </div>
+    <div class="p-6">
+      <p class="text-sm text-gray-600 mb-3">Use this token to configure the CommitKit CLI</p>
+      <div class="bg-gray-50 p-4 rounded-lg">
+        <code class="text-sm font-mono text-gray-900"><%= Current.user.api_token %></code>
+      </div>
+      <p class="text-xs text-gray-500 mt-2">Keep this token secret. Anyone with this token can track commits to your account.</p>
+    </div>
+  </div>
+
+  <!-- Quick Setup Section -->
+  <div class="bg-white rounded-lg shadow">
+    <div class="px-6 py-4 border-b border-gray-200">
+      <h2 class="text-xl font-semibold text-gray-900">Quick Setup</h2>
+    </div>
+    <div class="p-6">
+      <div class="space-y-4">
+        <div>
+          <h3 class="font-medium text-gray-900 mb-2">1. Install the CLI</h3>
+          <div class="bg-gray-50 p-3 rounded font-mono text-sm">
+            npm install -g commitkit
+          </div>
+        </div>
+
+        <div>
+          <h3 class="font-medium text-gray-900 mb-2">2. Configure your API token</h3>
+          <div class="bg-gray-50 p-3 rounded font-mono text-sm">
+            commitkit config <%= Current.user.api_token %>
+          </div>
+        </div>
+
+        <div>
+          <h3 class="font-medium text-gray-900 mb-2">3. Initialize in your repository</h3>
+          <div class="bg-gray-50 p-3 rounded font-mono text-sm">
+            cd /path/to/your/repo<br>
+            commitkit init
+          </div>
+        </div>
+
+        <div>
+          <h3 class="font-medium text-gray-900 mb-2">4. (Optional) Sync existing commits</h3>
+          <div class="bg-gray-50 p-3 rounded font-mono text-sm">
+            commitkit sync
+          </div>
+        </div>
+      </div>
+
+      <div class="mt-6 p-4 bg-blue-50 rounded-lg">
+        <p class="text-sm text-blue-900">
+          <strong>That's it!</strong> Your commits will now be automatically tracked every time you commit.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Back to Dashboard -->
+  <div class="mt-6">
+    <%= link_to "← Back to Dashboard", dashboard_path, class: "text-blue-600 hover:text-blue-700" %>
+  </div>
+</div>
