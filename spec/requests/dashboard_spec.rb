@@ -23,9 +23,10 @@ RSpec.describe "Dashboard", type: :request do
         expect(response.body).to include(user.email_address)
       end
 
-      it "displays API token" do
+      it "displays link to settings" do
         get dashboard_path
-        expect(response.body).to include(user.api_token)
+        expect(response.body).to include("Settings")
+        expect(response.body).to include(settings_path)
       end
 
       it "displays total commits count" do

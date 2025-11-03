@@ -10,6 +10,7 @@ Rails.application.routes.draw do
   # Landing page and dashboard
   root "home#index"
   get "/dashboard", to: "dashboard#index", as: :dashboard
+  get "/settings", to: "settings#index", as: :settings
 
   # API routes
   namespace :api do

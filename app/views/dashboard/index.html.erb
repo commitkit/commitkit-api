@@ -6,20 +6,13 @@
 
   <!-- Stats -->
   <div class="bg-white rounded-lg shadow p-6 mb-8">
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+    <div class="flex items-center justify-between">
       <div>
         <p class="text-sm text-gray-600 mb-1">Total Commits</p>
         <p class="text-3xl font-bold text-blue-600"><%= @total_commits %></p>
       </div>
       <div>
-        <p class="text-sm text-gray-600 mb-1">Your API Token</p>
-        <div class="flex items-center gap-2">
-          <code class="text-xs bg-gray-100 px-2 py-1 rounded"><%= Current.user.api_token %></code>
-        </div>
-      </div>
-      <div>
-        <p class="text-sm text-gray-600 mb-1">Quick Setup</p>
-        <p class="text-sm text-gray-700">Use your API token to configure the CLI</p>
+        <%= link_to "Settings", settings_path, class: "text-blue-600 hover:text-blue-700 font-medium" %>
       </div>
     </div>
   </div>
