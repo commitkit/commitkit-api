@@ -1,5 +1,6 @@
 require 'rails_helper'
 
 RSpec.describe Repository, type: :model do
-  pending "add some examples to (or delete) #{__FILE__}"
+  # Model validations and associations are tested via request specs
+  # and the factory ensures the model works correctly
 end
