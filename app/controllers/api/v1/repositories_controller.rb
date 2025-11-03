@@ -23,7 +23,8 @@ module Api
             repository: repository,
             commit_hash: commit_data[:commit_hash],
             message: commit_data[:message],
-            summary: commit_data[:summary]
+            summary: commit_data[:summary],
+            committed_at: commit_data[:committed_at]
           )
           synced += 1
         end
