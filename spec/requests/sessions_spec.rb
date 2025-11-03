@@ -32,7 +32,7 @@ RSpec.describe "Sessions", type: :request do
 
       it "logs in the user" do
         post session_path, params: valid_params
-        expect(response).to redirect_to(root_path)
+        expect(response).to redirect_to(dashboard_path)
       end
 
       it "sets the session" do
@@ -48,7 +48,7 @@ RSpec.describe "Sessions", type: :request do
           email_address: "test@example.com",
           password: "wrongpassword"
         }
-        expect(response).to redirect_to(new_session_path)
+        expect(response).to redirect_to(login_path)
       end
 
       it "does not log in with non-existent email" do
@@ -56,7 +56,7 @@ RSpec.describe "Sessions", type: :request do
           email_address: "nonexistent@example.com",
           password: "password123"
         }
-        expect(response).to redirect_to(new_session_path)
+        expect(response).to redirect_to(login_path)
       end
     end
   end
@@ -80,22 +80,22 @@ RSpec.describe "Sessions", type: :request do
 
       it "logs out the user" do
         delete session_path
-        expect(response).to redirect_to(new_session_path)
+        expect(response).to redirect_to(login_path)
       end
 
       it "clears the session" do
         delete session_path
         follow_redirect!
-        # After logout, trying to access root should redirect to login
-        get root_path
-        expect(response).to redirect_to(new_session_path)
+        # After logout, trying to access dashboard should redirect to login
+        get dashboard_path
+        expect(response).to redirect_to(login_path)
       end
     end
 
     context "when not logged in" do
       it "redirects to login" do
         delete session_path
-        expect(response).to redirect_to(new_session_path)
+        expect(response).to redirect_to(login_path)
       end
     end
   end
