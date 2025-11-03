@@ -1,8 +1,8 @@
 FactoryBot.define do
   factory :commit do
-    user { nil }
-    commit_hash { "MyString" }
-    message { "MyText" }
-    summary { "MyText" }
+    association :user
+    sequence(:commit_hash) { |n| Faker::Crypto.sha1 }
+    message { Faker::Lorem.sentence }
+    summary { Faker::Lorem.sentence(word_count: 5) }
   end
 end
