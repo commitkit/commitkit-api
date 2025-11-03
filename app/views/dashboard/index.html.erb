@@ -44,12 +44,12 @@
             <div class="px-6 py-4 hover:bg-gray-50">
               <div class="flex justify-between items-start mb-2">
                 <div class="flex-1">
-                  <p class="font-medium text-gray-900"><%= commit.message %></p>
+                  <p class="font-medium text-gray-900" style="white-space: pre-line;"><%= commit.message %></p>
                   <% if commit.summary.present? %>
                     <p class="text-sm text-gray-600 mt-1"><%= commit.summary %></p>
                   <% end %>
                 </div>
-                <span class="text-xs text-gray-500"><%= time_ago_in_words(commit.created_at) %> ago</span>
+                <span class="text-xs text-gray-500 flex-shrink-0 ml-4"><%= time_ago_in_words(commit.created_at) %> ago</span>
               </div>
               <div class="flex gap-4 text-xs text-gray-500">
                 <span>Hash: <code class="bg-gray-100 px-1 rounded"><%= commit.commit_hash.truncate(12) %></code></span>
