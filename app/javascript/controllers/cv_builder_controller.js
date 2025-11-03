@@ -15,34 +15,15 @@ export default class extends Controller {
   ]
 
   connect() {
-    this.selectionMode = false
     this.selectedIds = new Set()
   }
 
-  toggleSelection() {
-    this.selectionMode = !this.selectionMode
-
-    if (this.selectionMode) {
-      // Show checkboxes
-      this.checkboxTargets.forEach(cb => cb.classList.remove('hidden'))
-      this.panelTarget.classList.remove('hidden')
-      this.toggleButtonTarget.textContent = "Cancel Selection"
-      this.toggleButtonTarget.classList.remove('bg-purple-600', 'hover:bg-purple-700')
-      this.toggleButtonTarget.classList.add('bg-gray-500', 'hover:bg-gray-600')
-    } else {
-      // Hide checkboxes and panel
-      this.checkboxTargets.forEach(cb => {
-        cb.classList.add('hidden')
-        cb.checked = false
-      })
-      this.panelTarget.classList.add('hidden')
-      this.toggleButtonTarget.textContent = "Generate CV Bullets"
-      this.toggleButtonTarget.classList.remove('bg-gray-500', 'hover:bg-gray-600')
-      this.toggleButtonTarget.classList.add('bg-purple-600', 'hover:bg-purple-700')
-      this.selectedIds.clear()
-      this.updateCount()
-      this.hideResults()
-    }
+  selectAll() {
+    this.checkboxTargets.forEach(cb => {
+      cb.checked = true
+      this.selectedIds.add(cb.value)
+    })
+    this.updateCount()
   }
 
   updateSelection(event) {
@@ -57,10 +38,6 @@ export default class extends Controller {
 
   updateCount() {
     this.countTarget.textContent = this.selectedIds.size
-  }
-
-  cancel() {
-    this.toggleSelection()
   }
 
   async generate() {
