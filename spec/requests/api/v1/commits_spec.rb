@@ -12,7 +12,8 @@ RSpec.describe "Api::V1::Commits", type: :request do
           commit: {
             commit_hash: "abc123def456",
             message: "Add user authentication",
-            summary: "Implemented JWT-based authentication system"
+            summary: "Implemented JWT-based authentication system",
+            repository_url: "https://github.com/user/repo"
           }
         }
       end
@@ -32,6 +33,24 @@ RSpec.describe "Api::V1::Commits", type: :request do
         post "/api/v1/commits", params: valid_params, headers: headers, as: :json
 
         expect(Commit.last.user).to eq(user)
+      end
+
+      it "creates repository if it doesn't exist" do
+        expect {
+          post "/api/v1/commits", params: valid_params, headers: headers, as: :json
+        }.to change(Repository, :count).by(1)
+
+        expect(Commit.last.repository.url).to eq("https://github.com/user/repo")
+      end
+
+      it "uses existing repository if it already exists" do
+        existing_repo = create(:repository, user: user, url: "https://github.com/user/repo")
+
+        expect {
+          post "/api/v1/commits", params: valid_params, headers: headers, as: :json
+        }.to change(Repository, :count).by(0)
+
+        expect(Commit.last.repository).to eq(existing_repo)
       end
     end
 
@@ -56,7 +75,8 @@ RSpec.describe "Api::V1::Commits", type: :request do
         invalid_params = {
           commit: {
             message: "Add user authentication",
-            summary: "Implemented JWT-based authentication system"
+            summary: "Implemented JWT-based authentication system",
+            repository_url: "https://github.com/user/repo"
           }
         }
 
@@ -70,9 +90,11 @@ RSpec.describe "Api::V1::Commits", type: :request do
 
   describe "GET /api/v1/commits" do
     context "with valid authentication" do
+      let(:repo) { create(:repository, user: user) }
+
       before do
-        user.commits.create!(commit_hash: "abc123", message: "First commit", summary: "Summary 1")
-        user.commits.create!(commit_hash: "def456", message: "Second commit", summary: "Summary 2")
+        create(:commit, user: user, repository: repo, commit_hash: "abc123", message: "First commit", summary: "Summary 1")
+        create(:commit, user: user, repository: repo, commit_hash: "def456", message: "Second commit", summary: "Summary 2")
       end
 
       it "returns all commits for the authenticated user" do
@@ -90,8 +112,9 @@ RSpec.describe "Api::V1::Commits", type: :request do
       end
 
       it "does not return other users' commits" do
-        other_user = User.create!(email_address: "other@example.com", password: "password123", password_confirmation: "password123")
-        other_user.commits.create!(commit_hash: "xyz789", message: "Other commit", summary: "Other summary")
+        other_user = create(:user, email_address: "other@example.com")
+        other_repo = create(:repository, user: other_user)
+        create(:commit, user: other_user, repository: other_repo, commit_hash: "xyz789", message: "Other commit", summary: "Other summary")
 
         get "/api/v1/commits", headers: headers
 
@@ -129,8 +152,9 @@ RSpec.describe "Api::V1::Commits", type: :request do
       end
 
       it "does not allow deleting other users' commits" do
-        other_user = User.create!(email_address: "other@example.com", password: "password123", password_confirmation: "password123")
-        other_commit = other_user.commits.create!(commit_hash: "xyz789", message: "Other commit", summary: "Other summary")
+        other_user = create(:user, email_address: "other@example.com")
+        other_repo = create(:repository, user: other_user)
+        other_commit = create(:commit, user: other_user, repository: other_repo, commit_hash: "xyz789", message: "Other commit", summary: "Other summary")
 
         delete "/api/v1/commits/#{other_commit.id}", headers: headers
 

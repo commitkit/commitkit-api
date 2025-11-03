@@ -5,6 +5,99 @@ RSpec.describe "Api::V1::Repositories", type: :request do
   let(:api_token) { user.api_token }
   let(:headers) { { "Authorization" => "Bearer #{api_token}" } }
 
+  describe "POST /api/v1/repositories" do
+    context "with valid commits" do
+      it "creates repository and multiple commits" do
+        repository_data = {
+          url: "https://github.com/user/repo",
+          commits: [
+            {
+              commit_hash: "abc123",
+              message: "First commit",
+              summary: "First summary"
+            },
+            {
+              commit_hash: "def456",
+              message: "Second commit",
+              summary: "Second summary"
+            }
+          ]
+        }
+
+        expect {
+          post "/api/v1/repositories", params: repository_data, headers: headers, as: :json
+        }.to change(Repository, :count).by(1)
+         .and change(Commit, :count).by(2)
+
+        expect(response).to have_http_status(:created)
+        expect(json_response['synced']).to eq(2)
+        expect(json_response['skipped']).to eq(0)
+        expect(json_response['failed']).to eq(0)
+      end
+
+      it "finds existing repository instead of creating duplicate" do
+        existing_repo = create(:repository, user: user, url: "https://github.com/user/repo")
+
+        repository_data = {
+          url: "https://github.com/user/repo",
+          commits: [
+            {
+              commit_hash: "abc123",
+              message: "New commit",
+              summary: "New summary"
+            }
+          ]
+        }
+
+        expect {
+          post "/api/v1/repositories", params: repository_data, headers: headers, as: :json
+        }.to change(Repository, :count).by(0)
+         .and change(Commit, :count).by(1)
+
+        expect(response).to have_http_status(:created)
+        expect(Commit.last.repository).to eq(existing_repo)
+      end
+
+      it "skips duplicate commits" do
+        repo = create(:repository, user: user, url: "https://github.com/user/repo")
+        create(:commit, user: user, repository: repo, commit_hash: "abc123", message: "Existing")
+
+        repository_data = {
+          url: "https://github.com/user/repo",
+          commits: [
+            {
+              commit_hash: "abc123",
+              message: "First commit",
+              summary: "First summary"
+            },
+            {
+              commit_hash: "def456",
+              message: "Second commit",
+              summary: "Second summary"
+            }
+          ]
+        }
+
+        expect {
+          post "/api/v1/repositories", params: repository_data, headers: headers, as: :json
+        }.to change(Commit, :count).by(1)
+
+        expect(response).to have_http_status(:created)
+        expect(json_response['synced']).to eq(1)
+        expect(json_response['skipped']).to eq(1)
+        expect(json_response['failed']).to eq(0)
+      end
+    end
+
+    context "with invalid authentication" do
+      it "returns unauthorized" do
+        post "/api/v1/repositories", params: { url: "https://github.com/user/repo", commits: [] }, as: :json
+
+        expect(response).to have_http_status(:unauthorized)
+      end
+    end
+  end
+
   describe "DELETE /api/v1/repositories/:id" do
     let!(:repo_a) { create(:repository, user: user, url: "https://github.com/user/repo-a") }
     let!(:repo_b) { create(:repository, user: user, url: "https://github.com/user/repo-b") }

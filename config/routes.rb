@@ -14,12 +14,8 @@ Rails.application.routes.draw do
   # API routes
   namespace :api do
     namespace :v1 do
-      resources :commits, only: [ :index, :create, :destroy ] do
-        collection do
-          post :batch
-        end
-      end
-      resources :repositories, only: [ :destroy ]
+      resources :commits, only: [ :index, :create, :destroy ]
+      resources :repositories, only: [ :create, :destroy ]
     end
   end
 
