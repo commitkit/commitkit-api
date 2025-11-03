@@ -32,6 +32,35 @@ class Api::V1::CommitsController < Api::V1::BaseController
     end
   end
 
+  # POST /api/v1/commits/generate_cv_bullets
+  # Generates professional CV/resume bullet points from selected commits
+  def generate_cv_bullets
+    commit_ids = params[:commit_ids]
+    context = params[:context] # Optional additional context from user
+
+    unless commit_ids.present? && commit_ids.is_a?(Array)
+      return render json: { error: "commit_ids must be an array" }, status: :unprocessable_entity
+    end
+
+    commits = current_user.commits.where(id: commit_ids).order(committed_at: :desc, created_at: :desc)
+
+    if commits.empty?
+      return render json: { error: "No commits found with provided IDs" }, status: :not_found
+    end
+
+    begin
+      bullets = LlmService.generate_cv_bullets(commits: commits, context: context)
+      render json: {
+        bullets: bullets,
+        commits_used: commits.count,
+        generated_at: Time.current
+      }, status: :ok
+    rescue LlmService::LlmError => e
+      Rails.logger.error("CV bullet generation failed: #{e.message}")
+      render json: { error: "Failed to generate CV bullets: #{e.message}" }, status: :service_unavailable
+    end
+  end
+
   private
 
   def commit_params

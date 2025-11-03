@@ -10,12 +10,18 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2025_11_03_042356) do
+ActiveRecord::Schema[8.1].define(version: 2025_11_03_170206) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
   create_table "commits", force: :cascade do |t|
+    t.datetime "ai_generated_at"
+    t.string "ai_model"
+    t.string "ai_processing_status", default: "pending"
+    t.string "ai_provider"
+    t.text "ai_summary"
     t.string "commit_hash", null: false
+    t.datetime "committed_at"
     t.datetime "created_at", null: false
     t.text "message"
     t.bigint "repository_id", null: false
@@ -23,8 +29,11 @@ ActiveRecord::Schema[8.1].define(version: 2025_11_03_042356) do
     t.text "summary"
     t.datetime "updated_at", null: false
     t.bigint "user_id", null: false
+    t.index ["ai_processing_status"], name: "index_commits_on_ai_processing_status"
     t.index ["commit_hash"], name: "index_commits_on_commit_hash", unique: true
+    t.index ["committed_at"], name: "index_commits_on_committed_at"
     t.index ["repository_id"], name: "index_commits_on_repository_id"
+    t.index ["user_id", "ai_processing_status"], name: "index_commits_on_user_id_and_ai_processing_status"
     t.index ["user_id", "commit_hash"], name: "index_commits_on_user_id_and_commit_hash", unique: true
     t.index ["user_id"], name: "index_commits_on_user_id"
   end
@@ -49,6 +58,7 @@ ActiveRecord::Schema[8.1].define(version: 2025_11_03_042356) do
   end
 
   create_table "users", force: :cascade do |t|
+    t.boolean "ai_summaries_enabled", default: true, null: false
     t.string "api_token"
     t.datetime "created_at", null: false
     t.string "email_address", null: false

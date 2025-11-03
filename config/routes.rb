@@ -15,7 +15,11 @@ Rails.application.routes.draw do
   # API routes
   namespace :api do
     namespace :v1 do
-      resources :commits, only: [ :index, :create, :destroy ]
+      resources :commits, only: [ :index, :create, :destroy ] do
+        collection do
+          post :generate_cv_bullets
+        end
+      end
       resources :repositories, only: [ :index, :create, :destroy ]
     end
   end
