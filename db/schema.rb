@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2025_11_01_134705) do
+ActiveRecord::Schema[8.1].define(version: 2025_11_03_031310) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -18,12 +18,24 @@ ActiveRecord::Schema[8.1].define(version: 2025_11_01_134705) do
     t.string "commit_hash", null: false
     t.datetime "created_at", null: false
     t.text "message"
+    t.bigint "repository_id", null: false
+    t.string "repository_url"
     t.text "summary"
     t.datetime "updated_at", null: false
     t.bigint "user_id", null: false
     t.index ["commit_hash"], name: "index_commits_on_commit_hash", unique: true
+    t.index ["repository_id"], name: "index_commits_on_repository_id"
     t.index ["user_id", "commit_hash"], name: "index_commits_on_user_id_and_commit_hash", unique: true
     t.index ["user_id"], name: "index_commits_on_user_id"
+  end
+
+  create_table "repositories", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.string "url", null: false
+    t.bigint "user_id", null: false
+    t.index ["user_id", "url"], name: "index_repositories_on_user_id_and_url", unique: true
+    t.index ["user_id"], name: "index_repositories_on_user_id"
   end
 
   create_table "sessions", force: :cascade do |t|
@@ -45,6 +57,8 @@ ActiveRecord::Schema[8.1].define(version: 2025_11_01_134705) do
     t.index ["email_address"], name: "index_users_on_email_address", unique: true
   end
 
+  add_foreign_key "commits", "repositories"
   add_foreign_key "commits", "users"
+  add_foreign_key "repositories", "users"
   add_foreign_key "sessions", "users"
 end
