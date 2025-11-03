@@ -18,22 +18,33 @@
   </div>
 
   <!-- Commits List -->
-  <div class="bg-white rounded-lg shadow">
+  <div class="bg-white rounded-lg shadow" data-controller="cv-builder">
     <div class="px-6 py-4 border-b border-gray-200">
       <div class="flex justify-between items-center">
         <h2 class="text-xl font-semibold text-gray-900">Recent Commits</h2>
-        <% if @repositories.any? %>
-          <form method="get" action="<%= dashboard_path %>" data-turbo-frame="commits-list">
-            <select name="repository_id" class="border border-gray-300 rounded px-3 py-1 text-sm" data-turbo-action="advance" onchange="this.form.requestSubmit()">
-              <option value="">All Repositories</option>
-              <% @repositories.each do |repo| %>
-                <option value="<%= repo.id %>" <%= 'selected' if params[:repository_id] == repo.id.to_s %>>
-                  <%= repo.name || repo.url %>
-                </option>
-              <% end %>
-            </select>
-          </form>
-        <% end %>
+        <div class="flex items-center gap-4">
+          <!-- CV Builder Button -->
+          <button
+            type="button"
+            data-action="click->cv-builder#toggleSelection"
+            data-cv-builder-target="toggleButton"
+            class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 font-medium text-sm">
+            Generate CV Bullets
+          </button>
+
+          <% if @repositories.any? %>
+            <form method="get" action="<%= dashboard_path %>" data-turbo-frame="commits-list">
+              <select name="repository_id" class="border border-gray-300 rounded px-3 py-1 text-sm" data-turbo-action="advance" onchange="this.form.requestSubmit()">
+                <option value="">All Repositories</option>
+                <% @repositories.each do |repo| %>
+                  <option value="<%= repo.id %>" <%= 'selected' if params[:repository_id] == repo.id.to_s %>>
+                    <%= repo.name || repo.url %>
+                  </option>
+                <% end %>
+              </select>
+            </form>
+          <% end %>
+        </div>
       </div>
     </div>
 
@@ -44,7 +55,17 @@
             <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow" data-controller="expandable">
               <!-- Header with title and metadata -->
               <div class="flex items-start justify-between gap-6 mb-4">
-                <h3 class="text-lg font-semibold text-gray-900 flex-1"><%= commit.message.lines.first&.strip %></h3>
+                <div class="flex items-start gap-3 flex-1">
+                  <!-- Checkbox for CV selection -->
+                  <input
+                    type="checkbox"
+                    value="<%= commit.id %>"
+                    data-cv-builder-target="checkbox"
+                    data-action="change->cv-builder#updateSelection"
+                    class="mt-1 w-4 h-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500 hidden"
+                  />
+                  <h3 class="text-lg font-semibold text-gray-900 flex-1"><%= commit.message.lines.first&.strip %></h3>
+                </div>
                 <div class="text-right flex-shrink-0">
                   <div class="text-xs text-gray-500"><%= time_ago_in_words(commit.created_at) %> ago</div>
                   <div class="text-xs text-gray-400 mt-1">
@@ -52,6 +73,29 @@
                   </div>
                 </div>
               </div>
+
+              <!-- AI Business Value Summary -->
+              <% if commit.ai_summary.present? %>
+                <div class="mb-4 bg-gradient-to-r from-purple-50 to-blue-50 rounded-lg p-4 border border-purple-200">
+                  <div class="flex items-center gap-2 mb-2">
+                    <svg class="w-4 h-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
+                    </svg>
+                    <div class="text-xs font-medium text-purple-700 uppercase tracking-wide">AI Business Value</div>
+                    <% if commit.ai_processing_status == "processing" %>
+                      <span class="text-xs text-purple-600 animate-pulse">Generating...</span>
+                    <% elsif commit.ai_processing_status == "failed" %>
+                      <span class="text-xs text-red-600">Generation failed</span>
+                    <% end %>
+                  </div>
+                  <p class="text-sm text-gray-800"><%= commit.ai_summary %></p>
+                  <% if commit.ai_generated_at.present? %>
+                    <div class="text-xs text-purple-600 mt-2">
+                      Generated <%= time_ago_in_words(commit.ai_generated_at) %> ago using <%= commit.ai_model %>
+                    </div>
+                  <% end %>
+                </div>
+              <% end %>
 
               <!-- Two-column layout for summary and details -->
               <div class="commit-details-grid">
@@ -74,6 +118,68 @@
               </div>
             </div>
           <% end %>
+        </div>
+
+        <!-- CV Generation Panel -->
+        <div data-cv-builder-target="panel" class="hidden border-t-4 border-purple-300 bg-gradient-to-r from-purple-50 to-blue-50 p-6">
+          <div class="max-w-4xl mx-auto">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">Generate CV Bullet Points</h3>
+            <p class="text-sm text-gray-600 mb-4">
+              <span data-cv-builder-target="count" class="font-semibold text-purple-700">0</span> commits selected
+            </p>
+
+            <div class="mb-4">
+              <label for="cv-context" class="block text-sm font-medium text-gray-700 mb-2">
+                Additional Context (Optional)
+              </label>
+              <textarea
+                id="cv-context"
+                data-cv-builder-target="context"
+                rows="3"
+                class="w-full border-gray-300 rounded-lg shadow-sm focus:border-purple-500 focus:ring-purple-500"
+                placeholder="Add any additional context about these commits (e.g., 'These were part of a microservices migration project that reduced infrastructure costs by 40%')"></textarea>
+            </div>
+
+            <div class="flex gap-3">
+              <button
+                type="button"
+                data-action="click->cv-builder#generate"
+                class="px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 font-medium">
+                Generate Bullets
+              </button>
+              <button
+                type="button"
+                data-action="click->cv-builder#cancel"
+                class="px-6 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 font-medium">
+                Cancel
+              </button>
+            </div>
+
+            <!-- Results Area -->
+            <div data-cv-builder-target="results" class="hidden mt-6 bg-white rounded-lg p-6 shadow">
+              <div class="flex justify-between items-start mb-4">
+                <h4 class="text-md font-semibold text-gray-900">Generated CV Bullet Points</h4>
+                <button
+                  type="button"
+                  data-action="click->cv-builder#copyToClipboard"
+                  class="text-sm text-purple-600 hover:text-purple-700 font-medium">
+                  Copy to Clipboard
+                </button>
+              </div>
+              <div data-cv-builder-target="bulletsContent" class="text-sm text-gray-800 whitespace-pre-wrap font-mono"></div>
+            </div>
+
+            <!-- Loading State -->
+            <div data-cv-builder-target="loading" class="hidden mt-6 text-center">
+              <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600 mx-auto"></div>
+              <p class="text-sm text-gray-600 mt-2">Generating CV bullets...</p>
+            </div>
+
+            <!-- Error State -->
+            <div data-cv-builder-target="error" class="hidden mt-6 bg-red-50 border border-red-200 rounded-lg p-4">
+              <p class="text-sm text-red-800" data-cv-builder-target="errorMessage"></p>
+            </div>
+          </div>
         </div>
 
         <!-- Pagination -->
