@@ -26,9 +26,9 @@ class Api::V1::CommitsController < Api::V1::BaseController
 
     if commit
       commit.destroy
-      render json: { message: 'Commit deleted successfully' }, status: :ok
+      render json: { message: "Commit deleted successfully" }, status: :ok
     else
-      render json: { error: 'Commit not found' }, status: :not_found
+      render json: { error: "Commit not found" }, status: :not_found
     end
   end
 

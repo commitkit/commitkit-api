@@ -36,9 +36,9 @@ module Api
 
         if repository
           repository.destroy
-          render json: { message: 'Repository and all associated commits deleted successfully' }, status: :ok
+          render json: { message: "Repository and all associated commits deleted successfully" }, status: :ok
         else
-          render json: { error: 'Repository not found' }, status: :not_found
+          render json: { error: "Repository not found" }, status: :not_found
         end
       end
     end
