@@ -1,6 +1,12 @@
 module Api
   module V1
     class RepositoriesController < BaseController
+      def index
+        repositories = current_user.repositories
+        repositories = repositories.where(url: params[:url]) if params[:url].present?
+        render json: repositories, status: :ok
+      end
+
       def create
         repository = current_user.repositories.find_or_create_by!(url: params[:url])
 
