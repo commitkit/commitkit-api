@@ -52,6 +52,31 @@ RSpec.describe "Dashboard", type: :request do
         get dashboard_path
         expect(response.body).to include("No commits yet")
       end
+
+      it "filters commits by repository when repository_id parameter is provided" do
+        repo1 = create(:repository, user: user, url: "https://github.com/user/repo1.git", name: "repo1")
+        repo2 = create(:repository, user: user, url: "https://github.com/user/repo2.git", name: "repo2")
+
+        commit1 = user.commits.create!(repository: repo1, commit_hash: "abc123", message: "Commit in repo1", summary: "Summary 1")
+        commit2 = user.commits.create!(repository: repo2, commit_hash: "def456", message: "Commit in repo2", summary: "Summary 2")
+        commit3 = user.commits.create!(repository: repo1, commit_hash: "ghi789", message: "Another commit in repo1", summary: "Summary 3")
+
+        get dashboard_path, params: { repository_id: repo1.id }
+
+        expect(response.body).to include("Commit in repo1")
+        expect(response.body).to include("Another commit in repo1")
+        expect(response.body).not_to include("Commit in repo2")
+      end
+
+      it "shows all repositories in filter dropdown" do
+        repo1 = create(:repository, user: user, url: "https://github.com/user/repo1.git", name: "repo1")
+        repo2 = create(:repository, user: user, url: "https://github.com/user/repo2.git", name: "repo2")
+
+        get dashboard_path
+
+        expect(response.body).to include("repo1")
+        expect(response.body).to include("repo2")
+      end
     end
 
     context "when user is not authenticated" do
