@@ -12,12 +12,16 @@ Rails.application.routes.draw do
   get "/dashboard", to: "dashboard#index", as: :dashboard
   get "/settings", to: "settings#index", as: :settings
 
+  # AI Summaries
+  resources :ai_summaries, only: [:create]
+
   # API routes
   namespace :api do
     namespace :v1 do
       resources :commits, only: [ :index, :create, :destroy ] do
         collection do
           post :generate_cv_bullets
+          post :generate_ai_summaries
         end
       end
       resources :repositories, only: [ :index, :create, :destroy ]
