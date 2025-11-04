@@ -15,7 +15,7 @@ class GenerateAiSummaryJob < ApplicationJob
 
     commit.update!(
       ai_summary: summary,
-      ai_provider: "server",
+      ai_provider: :anthropic,
       ai_model: LlmService::DEFAULT_MODEL,
       ai_generated_at: Time.current,
       ai_processing_status: "completed"
