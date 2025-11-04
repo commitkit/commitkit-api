@@ -13,7 +13,7 @@ Rails.application.routes.draw do
   get "/settings", to: "settings#index", as: :settings
 
   # AI Summaries
-  resources :ai_summaries, only: [:create]
+  resources :ai_summaries, only: [ :create ]
 
   # API routes
   namespace :api do
