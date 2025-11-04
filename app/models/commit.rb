@@ -7,6 +7,13 @@ class Commit < ApplicationRecord
 
   after_create :enqueue_ai_summary_generation
 
+  # Enum for AI provider
+  enum :ai_provider, {
+    anthropic: "anthropic",
+    cursor: "cursor",
+    windsurf: "windsurf"
+  }, prefix: true
+
   # Scopes for AI processing status
   scope :pending_ai_summary, -> { where(ai_processing_status: "pending") }
   scope :processing_ai_summary, -> { where(ai_processing_status: "processing") }
