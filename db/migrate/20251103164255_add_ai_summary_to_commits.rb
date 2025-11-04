@@ -7,6 +7,6 @@ class AddAiSummaryToCommits < ActiveRecord::Migration[8.1]
     add_column :commits, :ai_processing_status, :string, default: "pending"
 
     add_index :commits, :ai_processing_status
-    add_index :commits, [:user_id, :ai_processing_status]
+    add_index :commits, [ :user_id, :ai_processing_status ]
   end
 end

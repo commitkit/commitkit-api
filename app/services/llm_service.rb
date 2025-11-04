@@ -29,7 +29,7 @@ class LlmService
     response = Anthropic.messages.create(
       model: model,
       max_tokens: max_tokens,
-      messages: [{ role: "user", content: prompt }],
+      messages: [ { role: "user", content: prompt } ],
       temperature: 0.7
     )
 
