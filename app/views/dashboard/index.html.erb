@@ -42,12 +42,27 @@
   <!-- Tab: AI Summary & CV Builder (Default) -->
   <div data-tabs-target="panel" data-tab-name="cv" class="bg-white rounded-lg shadow" data-controller="cv-builder">
     <div class="px-6 py-4 border-b border-gray-200">
-      <h2 class="text-xl font-semibold text-gray-900">Generate CV Bullet Points</h2>
-      <p class="text-sm text-gray-600 mt-1">Select commits with AI-generated summaries to create professional CV bullets</p>
+      <div class="flex justify-between items-center">
+        <div>
+          <h2 class="text-xl font-semibold text-gray-900">Generate CV Bullet Points</h2>
+          <p class="text-sm text-gray-600 mt-1">Select commits with AI-generated summaries to create professional CV bullets</p>
+        </div>
+        <% total_without_ai = Current.user.commits.where(ai_summary: nil).count %>
+        <% if total_without_ai > 0 %>
+          <button
+            type="button"
+            data-controller="ai-batch-generator"
+            data-action="click->ai-batch-generator#generate"
+            data-ai-batch-generator-count-value="<%= total_without_ai %>"
+            class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 font-medium text-sm transition-colors">
+            Generate AI Summaries (<%= total_without_ai %>)
+          </button>
+        <% end %>
+      </div>
     </div>
 
     <div class="p-6">
-      <% if @commits.any? %>
+      <% if @commits_with_ai.any? %>
         <!-- Selection Info -->
         <div class="mb-6 flex items-center justify-between">
           <div>
@@ -64,9 +79,9 @@
         </div>
 
         <!-- Commits with AI Summaries -->
-        <div class="space-y-4 mb-6">
-          <% @commits.each do |commit| %>
-            <% if commit.ai_summary.present? %>
+        <% if @commits_with_ai.any? %>
+          <div class="space-y-4 mb-6">
+            <% @commits_with_ai.each do |commit| %>
               <label class="block cursor-pointer">
                 <div class="border-2 border-gray-200 rounded-lg p-4 hover:border-purple-300 transition-colors has-[:checked]:border-purple-500 has-[:checked]:bg-purple-50">
                   <div class="flex items-start gap-3">
@@ -101,55 +116,63 @@
                 </div>
               </label>
             <% end %>
-          <% end %>
-        </div>
-
-        <!-- CV Generation Form -->
-        <div class="bg-gray-50 rounded-lg p-6 border border-gray-200">
-          <div class="mb-4">
-            <label for="cv-context" class="block text-sm font-medium text-gray-700 mb-2">
-              Additional Context (Optional)
-            </label>
-            <textarea
-              id="cv-context"
-              data-cv-builder-target="context"
-              rows="3"
-              class="w-full border-gray-300 rounded-lg shadow-sm focus:border-purple-500 focus:ring-purple-500"
-              placeholder="Add any additional context about these commits (e.g., 'These were part of a microservices migration project that reduced infrastructure costs by 40%')"></textarea>
           </div>
 
-          <button
-            type="button"
-            data-action="click->cv-builder#generate"
-            class="px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 font-medium text-base">
-            Generate CV Bullets
-          </button>
-        </div>
+          <!-- CV Generation Form -->
+          <div class="bg-gray-50 rounded-lg p-6 border border-gray-200">
+            <div class="mb-4">
+              <label for="cv-context" class="block text-sm font-medium text-gray-700 mb-2">
+                Additional Context (Optional)
+              </label>
+              <textarea
+                id="cv-context"
+                data-cv-builder-target="context"
+                rows="3"
+                class="w-full border-gray-300 rounded-lg shadow-sm focus:border-purple-500 focus:ring-purple-500"
+                placeholder="Add any additional context about these commits (e.g., 'These were part of a microservices migration project that reduced infrastructure costs by 40%')"></textarea>
+            </div>
 
-        <!-- Results Area -->
-        <div data-cv-builder-target="results" class="hidden mt-6 bg-white rounded-lg p-6 shadow-lg border-2 border-purple-200">
-          <div class="flex justify-between items-start mb-4">
-            <h4 class="text-lg font-semibold text-gray-900">Generated CV Bullet Points</h4>
             <button
               type="button"
-              data-action="click->cv-builder#copyToClipboard"
-              class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 font-medium text-sm">
-              Copy to Clipboard
+              data-action="click->cv-builder#generate"
+              class="px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 font-medium text-base">
+              Generate CV Bullets
             </button>
           </div>
-          <div data-cv-builder-target="bulletsContent" class="text-sm text-gray-800 whitespace-pre-wrap font-mono bg-gray-50 p-4 rounded border border-gray-200"></div>
-        </div>
 
-        <!-- Loading State -->
-        <div data-cv-builder-target="loading" class="hidden mt-6 text-center py-8">
-          <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto"></div>
-          <p class="text-sm text-gray-600 mt-4">Generating professional CV bullets...</p>
-        </div>
+          <!-- Results Area -->
+          <div data-cv-builder-target="results" class="hidden mt-6 bg-white rounded-lg p-6 shadow-lg border-2 border-purple-200">
+            <div class="flex justify-between items-start mb-4">
+              <h4 class="text-lg font-semibold text-gray-900">Generated CV Bullet Points</h4>
+              <button
+                type="button"
+                data-action="click->cv-builder#copyToClipboard"
+                class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 font-medium text-sm">
+                Copy to Clipboard
+              </button>
+            </div>
+            <div data-cv-builder-target="bulletsContent" class="text-sm text-gray-800 whitespace-pre-wrap font-mono bg-gray-50 p-4 rounded border border-gray-200"></div>
+          </div>
 
-        <!-- Error State -->
-        <div data-cv-builder-target="error" class="hidden mt-6 bg-red-50 border border-red-200 rounded-lg p-4">
-          <p class="text-sm text-red-800" data-cv-builder-target="errorMessage"></p>
-        </div>
+          <!-- Loading State -->
+          <div data-cv-builder-target="loading" class="hidden mt-6 text-center py-8">
+            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto"></div>
+            <p class="text-sm text-gray-600 mt-4">Generating professional CV bullets...</p>
+          </div>
+
+          <!-- Error State -->
+          <div data-cv-builder-target="error" class="hidden mt-6 bg-red-50 border border-red-200 rounded-lg p-4">
+            <p class="text-sm text-red-800" data-cv-builder-target="errorMessage"></p>
+          </div>
+        <% else %>
+          <div class="py-12 text-center">
+            <svg class="w-16 h-16 text-gray-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
+            </svg>
+            <p class="text-gray-500 mb-2 font-medium">No AI summaries available yet</p>
+            <p class="text-sm text-gray-400">AI summaries are being generated for your commits. Check the "All Commits" tab to see the status.</p>
+          </div>
+        <% end %>
       <% else %>
         <div class="py-12 text-center">
           <p class="text-gray-500 mb-4">No commits yet</p>
@@ -180,10 +203,10 @@
     </div>
 
     <%= turbo_frame_tag "commits-list" do %>
-      <% if @commits.any? %>
+      <% if @all_commits.any? %>
         <div class="p-6 space-y-6">
-          <% @commits.each do |commit| %>
-            <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow" data-controller="expandable">
+          <% @all_commits.each do |commit| %>
+            <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow" <%= 'data-controller="expandable"' if commit.message.lines.count > 1 %>>
               <!-- Header with title and metadata -->
               <div class="flex items-start justify-between gap-6 mb-4">
                 <h3 class="text-lg font-semibold text-gray-900 flex-1"><%= commit.message.lines.first&.strip %></h3>
