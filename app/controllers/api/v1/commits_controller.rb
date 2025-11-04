@@ -33,6 +33,53 @@ class Api::V1::CommitsController < Api::V1::BaseController
     end
   end
 
+  # POST /api/v1/commits/generate_ai_summaries
+  # Batch generates AI summaries for commits without them
+  def generate_ai_summaries
+    commits_without_summaries = current_user.commits.where(ai_summary: nil)
+
+    if commits_without_summaries.empty?
+      return render json: {
+        message: "All commits already have AI summaries",
+        processed: 0
+      }, status: :ok
+    end
+
+    # Process in background job for better UX (we'll implement this next)
+    # For now, process synchronously but limit to prevent timeouts
+    limit = params[:limit]&.to_i || 10
+    commits_to_process = commits_without_summaries.limit(limit)
+
+    processed = 0
+    failed = 0
+
+    commits_to_process.each do |commit|
+      begin
+        summary = LlmService.generate_commit_summary(message: commit.message)
+        commit.update!(
+          ai_summary: summary,
+          ai_processing_status: "completed",
+          ai_generated_at: Time.current,
+          ai_model: LlmService::DEFAULT_MODEL
+        )
+        processed += 1
+      rescue StandardError => e
+        Rails.logger.error("Failed to generate summary for commit #{commit.id}: #{e.message}")
+        commit.update(ai_processing_status: "failed")
+        failed += 1
+      end
+    end
+
+    remaining = commits_without_summaries.count - processed - failed
+
+    render json: {
+      processed: processed,
+      failed: failed,
+      remaining: remaining,
+      message: "Generated #{processed} AI summaries"
+    }, status: :ok
+  end
+
   # POST /api/v1/commits/generate_cv_bullets
   # Generates professional CV/resume bullet points from selected commits
   def generate_cv_bullets
