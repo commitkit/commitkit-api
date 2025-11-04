@@ -76,3 +76,5 @@ group :test do
 end
 
 gem "anthropic-rb", "~> 0.5.0"
+
+gem "dotenv-rails", "~> 3.1"
