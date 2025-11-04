@@ -52,6 +52,60 @@ RSpec.describe "Api::V1::Commits", type: :request do
 
         expect(Commit.last.repository).to eq(existing_repo)
       end
+
+      context "with optional AI fields" do
+        let(:params_with_ai) do
+          {
+            commit: {
+              commit_hash: "abc123def456",
+              message: "Add user authentication",
+              repository_url: "https://github.com/user/repo",
+              ai_summary: "Implemented secure authentication system with JWT tokens",
+              ai_provider: "ollama",
+              ai_model: "qwen2.5:14b",
+              ai_generated_at: "2024-11-04T10:00:00Z"
+            }
+          }
+        end
+
+        it "accepts AI fields when provided" do
+          post "/api/v1/commits", params: params_with_ai, headers: headers, as: :json
+
+          expect(response).to have_http_status(:created)
+          commit = Commit.last
+          expect(commit.ai_summary).to eq("Implemented secure authentication system with JWT tokens")
+          expect(commit.ai_provider).to eq("ollama")
+          expect(commit.ai_model).to eq("qwen2.5:14b")
+          expect(commit.ai_generated_at).to be_present
+        end
+
+        it "sets ai_processing_status to completed when AI fields provided" do
+          post "/api/v1/commits", params: params_with_ai, headers: headers, as: :json
+
+          expect(Commit.last.ai_processing_status).to eq("completed")
+        end
+
+        it "does not enqueue AI generation job when AI fields provided" do
+          expect(GenerateAiSummaryJob).not_to receive(:perform_later)
+
+          post "/api/v1/commits", params: params_with_ai, headers: headers, as: :json
+        end
+      end
+
+      context "without optional AI fields" do
+        it "sets ai_processing_status to pending by default" do
+          post "/api/v1/commits", params: valid_params, headers: headers, as: :json
+
+          expect(Commit.last.ai_processing_status).to eq("pending")
+        end
+
+        it "enqueues AI generation job when AI fields not provided" do
+          allow(user).to receive(:ai_summaries_enabled?).and_return(true)
+          expect(GenerateAiSummaryJob).to receive(:perform_later)
+
+          post "/api/v1/commits", params: valid_params, headers: headers, as: :json
+        end
+      end
     end
 
     context "with invalid authentication" do
