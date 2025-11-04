@@ -7,13 +7,26 @@ class Api::V1::CommitsController < Api::V1::BaseController
   def create
     repository = current_user.repositories.find_or_create_by!(url: params[:commit][:repository_url])
 
-    commit = current_user.commits.new(
+    commit_attrs = {
       commit_hash: params[:commit][:commit_hash],
       message: params[:commit][:message],
       summary: params[:commit][:summary],
       committed_at: params[:commit][:committed_at],
       repository: repository
-    )
+    }
+
+    # Add optional AI fields if provided
+    if params[:commit][:ai_summary].present?
+      commit_attrs.merge!(
+        ai_summary: params[:commit][:ai_summary],
+        ai_provider: params[:commit][:ai_provider],
+        ai_model: params[:commit][:ai_model],
+        ai_generated_at: params[:commit][:ai_generated_at],
+        ai_processing_status: "completed"
+      )
+    end
+
+    commit = current_user.commits.new(commit_attrs)
 
     if commit.save
       render json: commit, status: :created

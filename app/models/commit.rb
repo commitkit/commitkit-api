@@ -10,6 +10,7 @@ class Commit < ApplicationRecord
   # Enum for AI provider
   enum :ai_provider, {
     anthropic: "anthropic",
+    ollama: "ollama",
     cursor: "cursor",
     windsurf: "windsurf"
   }, prefix: true
@@ -24,6 +25,7 @@ class Commit < ApplicationRecord
 
   def enqueue_ai_summary_generation
     return unless user.ai_summaries_enabled?
+    return if ai_summary.present? # Skip if AI summary already provided
 
     GenerateAiSummaryJob.perform_later(id)
   end
