@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2025_11_03_170206) do
+ActiveRecord::Schema[8.1].define(version: 2025_11_04_194500) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -23,6 +23,11 @@ ActiveRecord::Schema[8.1].define(version: 2025_11_03_170206) do
     t.string "commit_hash", null: false
     t.datetime "committed_at"
     t.datetime "created_at", null: false
+    t.string "default_branch"
+    t.text "diff"
+    t.integer "diff_lines"
+    t.integer "diff_size"
+    t.boolean "diff_too_large", default: false
     t.text "message"
     t.bigint "repository_id", null: false
     t.string "repository_url"

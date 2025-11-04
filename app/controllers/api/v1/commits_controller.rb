@@ -12,7 +12,13 @@ class Api::V1::CommitsController < Api::V1::BaseController
       message: params[:commit][:message],
       summary: params[:commit][:summary],
       committed_at: params[:commit][:committed_at],
-      repository: repository
+      repository: repository,
+      # Diff fields
+      diff: params[:commit][:diff],
+      diff_lines: params[:commit][:diff_lines],
+      diff_size: params[:commit][:diff_size],
+      diff_too_large: params[:commit][:diff_too_large],
+      default_branch: params[:commit][:default_branch]
     }
 
     # Add optional AI fields if provided
