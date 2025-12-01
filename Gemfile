@@ -46,7 +46,7 @@ gem "image_processing", "~> 1.2"
 gem "resend", "~> 0.11.0"
 
 # Pagination
-gem "pagy", "~> 9.0"
+gem "pagy", "~> 43.1"
 
 group :development, :test do
   # See https://guides.rubyonrails.org/debugging_rails_applications.html#debugging-with-the-debug-gem
