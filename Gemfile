@@ -43,7 +43,7 @@ gem "thruster", require: false
 gem "image_processing", "~> 1.2"
 
 # Email delivery via Resend
-gem "resend", "~> 0.11.0"
+gem "resend", "~> 1.0.0"
 
 # Pagination
 gem "pagy", "~> 9.0"
