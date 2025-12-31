@@ -19,7 +19,7 @@ Developer commits → CLI git hook → API endpoint → Database → AI job → 
 
 ## Tech Stack
 
-- **Ruby:** 3.3.6
+- **Ruby:** 3.2.2
 - **Rails:** 8.1.1
 - **Database:** PostgreSQL
 - **Background Jobs:** Solid Queue (Rails 8 built-in)
@@ -30,7 +30,7 @@ Developer commits → CLI git hook → API endpoint → Database → AI job → 
 
 ## Prerequisites
 
-- Ruby 3.3.6 (use `rbenv` or `asdf`)
+- Ruby 3.2.2 (use `rbenv` or `asdf`)
 - PostgreSQL 14+
 - Node.js (for Tailwind CSS compilation)
 - Anthropic API key (for AI summaries)
@@ -47,7 +47,8 @@ bin/setup
 This runs:
 1. `bundle install` - Install gem dependencies
 2. `bin/rails db:prepare` - Create and migrate database
-3. Starts the development server
+
+After setup completes, start the server with `bin/dev`
 
 ### Manual Setup
 
@@ -169,8 +170,8 @@ Commit
 **LlmService** (`app/services/llm_service.rb`)
 - Uses Anthropic Claude API
 - Two models:
-  - `claude-3-5-haiku-20241022`: Fast, cheap summaries
-  - `claude-3-5-sonnet-20241022`: High-quality CV bullets
+  - `claude-3-5-haiku-20241022`: Fast, cheap summaries (automatic background processing)
+  - `claude-3-5-sonnet-20241022`: High-quality CV bullets (user-triggered generation)
 - 30-day cache for commit summaries
 
 **Background Processing:**
@@ -240,7 +241,7 @@ RAILS_MASTER_KEY=...  # For encrypted credentials
 
 **Deployed to:** https://commitkit-api.onrender.com
 
-**Dockerfile:** Existing `Dockerfile` in repo root
+**Dockerfile:** Located in monorepo root (`../Dockerfile`)
 
 **Important: Free Tier Keep-Alive**
 
@@ -252,8 +253,7 @@ Render's free tier spins down after 15 minutes of inactivity. To prevent this:
    - URL: `https://commitkit-api.onrender.com/up`
    - Interval: Every 5 minutes
    - Name: "CommitKit API"
-3. Optional: Enable free public status page (e.g., `stats.uptimerobot.com/xUcK0pEe3V`)
-4. Skip onboarding, save monitor
+3. Public status page: https://stats.uptimerobot.com/xUcK0pEe3V
 
 **Why UptimeRobot instead of GitHub Actions?**
 - `.github/workflows/keep-alive.yml` requires ~4,320 Actions minutes/month
@@ -374,8 +374,8 @@ commitkit/
 
 ## Support
 
-- GitHub Issues: [Create issue](https://github.com/your-org/commitkit/issues)
-- Email: support@commitkit.dev
+- GitHub Issues: [commitkit/commitkit](https://github.com/commitkit/commitkit/issues)
+- Documentation: See [CLAUDE.md](../CLAUDE.md) for development guide
 
 ---
 
